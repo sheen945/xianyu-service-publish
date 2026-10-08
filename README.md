@@ -1,8 +1,68 @@
 # xianyu-service-publish
 
-> 闲鱼全栈运营技能。v4.0 核心修正：①发布宝贝一律走易店助手（ed.weeeg.com，模式K），禁止登闲鱼后台（goofish.com）发布；②唯一浏览器 Chrome CDP 9222 + 固定登录态目录 chrome-cdp-profile，登录一次永久有效，禁止换浏览器/换目录；③新增环境自检脚本 ensure_chrome.py（每次任务第一步）。管理能力（v3.0）：商品列表/开关（自动发货/售罄上架/2人小刀）、鱼店配置、智能回复、商品采集、卡券系统、订单统计。备用通道（仅易店不可用时）：goofish.com 网页直发（v2.x 模式A/B/C）。合规红线（境外AI工具名/模型部署/无人机考证/代刷托管/医疗代办代挂号永久禁发）。触发场景：用户说"在闲鱼发布XX服务"、"批量发布"、"帮我挂闲鱼"、"易店商品管理"、"开启自动发货"、"配置智能回复"、"小刀商品"、"商品采集"、"卡券管理"。
+闲鱼全栈运营技能（WorkBuddy / CodeBuddy / Claude Code Skill）——通过 Chrome CDP 浏览器自动化，完成闲鱼服务类商品的发布、管理、采集、卡券、订单统计与内容引流全流程。
 
-## 安装
+## 简介
+
+这是一个面向闲鱼店铺运营的 AI 技能仓库。用户只需扫码登录一次，AI 即可接管文案撰写、主图生成、表单填写、商品发布、开关配置、智能回复、订单统计等全部日常运营动作。
+
+**解决什么问题：**
+- 闲鱼服务类商品发布流程繁琐（标题/描述/主图/分类/价格/库存逐项手工填写），批量铺货极其耗时
+- 运营动作分散在易店助手后台的多个模块（商品、配置、回复、采集、卡券、订单），缺乏统一自动化入口
+- 平台风控严格，违禁词、不合规类目会导致批量下架甚至封号，需要内建合规红线约束 AI 行为
+
+**适合谁：**
+- 在闲鱼经营服务类商品（拍摄剪辑、无人机、AI 服务、生活服务、资料卡券等）的个人卖家
+- 使用 WorkBuddy / CodeBuddy / Claude Code，希望用自然语言驱动店铺运营的用户
+
+**v4.0 核心修正：**
+1. 发布宝贝一律走易店助手（ed.weeeg.com，模式 K），禁止登闲鱼后台（goofish.com）发布
+2. 唯一浏览器 Chrome CDP 9222 + 固定登录态目录 `chrome-cdp-profile`，登录一次永久有效，禁止换浏览器/换目录
+3. 新增环境自检脚本 `ensure_chrome.py`（每次任务第一步）
+
+**触发场景（安装后说这些话即可自动匹配本技能）：**"在闲鱼发布XX服务"、"批量发布"、"帮我挂闲鱼"、"易店商品管理"、"开启自动发货"、"配置智能回复"、"小刀商品"、"商品采集"、"卡券管理"。
+
+## 功能列表
+
+**发布 + 管理主通道（易店助手 ed.weeeg.com，Chrome CDP 9222）：**
+
+- **模式 K 发布商品** —— 主通道。单发（`ed_publish.py`）/ 批量（`ed_publish_batch.py`），支持 `dry_run` 预览、断点续跑、防风控间隔
+- **模式 E 商品管理** —— 商品列表/筛选/搜索，行内三开关（自动发货/售罄上架/2人小刀），批量开关、行内「更多」菜单（配置发货/编辑/复制/下架/删除）
+- **模式 F 鱼店配置** —— 全局开关管理：自动发货/自动回复/免拼发货/卡卷单发/异常通知/自动求花，支持批量配置一次性保存
+- **模式 G 智能回复** —— 关键词/首次/系统消息回复规则的读取、添加、启停，降低客服成本
+- **模式 H 商品采集** —— 从其他闲鱼店铺批量采集商品到自己店铺（立即发布或存草稿），适合扩规模
+- **模式 I 卡券系统** —— 卡卷列表/卡种管理/批量导入（文本/文件/系统生成），用于虚拟商品自动发货
+- **模式 J 订单统计** —— 订单列表（9 种状态筛选）、状态概览、销售统计（今日/昨日/环比）、评价管理
+
+**内容引流通道（闲鱼创作者平台 author.goofish.com）：**
+
+- **模式 M 创作者发帖** —— 图文帖子创作规范与引流打法（详见 `references/creator-platform.md`）。注意：帖子≠宝贝，禁价格/促销/联系方式/硬导流，靠人设+价值软引流；闲鱼圈子只能手机 App 发，创作者平台是电脑端发内容的官方通道
+
+**诊断与备用通道：**
+
+- **模式 L 搜索可见性诊断** —— 纯读取零风控。以买家视角搜关键词，看自家商品在前 3 页的排名，判定是否被限流（`check_visibility.py`）
+- **模式 A/B/C goofish.com 备用直发**（v2.x 遗留）—— 仅易店助手不可用时，经用户确认后启用；同一 Chrome 实例（9222 + 同一 profile），不要另起浏览器
+
+**辅助能力：**
+
+- **即梦 AI 主图生成**（`gen_main_image.py`）—— 经 New API 网关自动选最强生图模型，实拍场景感提示词库（photo/video/drone/repair/ai/design），自动过滤境外 AI 工具名；批量发布时数据文件图片字段写 `AUTO` 即可先生图再发布
+- **代码卡片主图**（`make-service-card.ps1`）—— 即梦服务不可用时的备选方案，PowerShell 参数化绘制
+- **文案转化法则 + 服务文案模板** —— 内建标题/正文/话术/FAQ 写作规范，及 33 项服务完整文案库（`references/service-library.md`）
+
+## 工作原理与技术栈
+
+- **浏览器自动化**：Python 3 + Chrome DevTools Protocol（CDP，端口 9222，WebSocket），依赖 `requests` / `websocket-client`。所有脚本经 `cdp_tools.py` 通用工具库连接 Chrome、执行 JS eval、模拟真实鼠标/键盘事件
+- **双平台分工**：
+  - 发布 + 管理：易店助手 `ed.weeeg.com/ekadmin`（模式 K/E/F/G/H/I/J）
+  - 内容引流：闲鱼创作者平台 `author.goofish.com`（模式 M）
+  - 备用直发：`goofish.com`（仅模式 A/B/C）
+- **表单驱动**：易店后台为 Element UI（el-radio-button / el-switch / el-dropdown 等），脚本用真实鼠标点击 + `Input.dispatchKeyEvent` 逐字符输入 + `execCommand('insertText')` 注入中文
+- **登录态持久化**：易店 + 闲鱼 Cookie 全部存于固定 Chrome profile 目录，登录一次永久有效
+- **AI 生图链路**：`gen_main_image.py` → New API 网关（127.0.0.1:3000）→ 即梦（Jimeng）生图模型，每次从 `/v1/models` 自动挑选最强可用模型
+
+## 安装与使用
+
+### 安装
 
 把本仓库的目录内容复制到你的技能目录下，文件夹名保持 `xianyu-service-publish`：
 
@@ -11,11 +71,28 @@
 
 重启会话后即可通过触发词自动匹配。
 
-## 技能说明
+### 环境要求（运行环境速查，v4.0 统一）
 
-以下为 `SKILL.md` 正文。
+- 浏览器：Chrome（`C:\Program Files\Google\Chrome\Application\chrome.exe`），禁止其他浏览器
+- Chrome CDP 端口：9222，启动参数 `--remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir=C:\Users\Administrator\WorkBuddy\chrome-cdp-profile`
+- 登录态目录：`C:\Users\Administrator\WorkBuddy\chrome-cdp-profile`（易店+闲鱼 Cookie 都在这，勿删勿换）
+- 环境自检：`scripts/ensure_chrome.py`（每次任务第一步）
+- Python：`C:\Users\Administrator\.workbuddy\binaries\python\envs\default\Scripts\python.exe`（依赖 requests/websocket-client）
+- 脚本目录：`C:\Users\Administrator\.workbuddy\skills\xianyu-service-publish\scripts\`
+
+### 易店模块 URL
+
+- 商品管理：`ed.weeeg.com/ekadmin/product/product_list`
+- 添加商品（发布）：`ed.weeeg.com/ekadmin/product/add_product`
+- 鱼店配置：`ed.weeeg.com/ekadmin/configuration/yudian_config/2/113`
+- 智能回复：`ed.weeeg.com/ekadmin/configuration/storereply`
+- 商品采集：`ed.weeeg.com/ekadmin/product/productcollect`
+- 卡卷管理：`ed.weeeg.com/ekadmin/card/card_cdk`
+- 订单管理：`ed.weeeg.com/ekadmin/order/list`
 
 ---
+
+## 技能说明（SKILL.md 正文）
 
 # 闲鱼服务类商品发布
 
@@ -52,23 +129,6 @@ Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentL
 > 注意：本环境 **PowerShell 工具 stdout 捕获不稳定**（输出为空不代表失败），启动后务必用 Bash curl 验证端口存活。
 > 只有扫码登录这类必须人操作的环节才找用户；桌面「启动浏览器.exe」仅作备用。
 
-**发布+管理主通道（易店助手 ed.weeeg.com，Chrome CDP 9222）**：
-- **模式 K 发布商品**：单发（ed_publish.py）/ 批量（ed_publish_batch.py）✅ 主通道
-- **模式 E 商品管理**：列表/筛选/开关（自动发货/售罄上架/2人小刀）
-- **模式 F 鱼店配置**：自动发货/自动回复/免拼发货/卡卷单发/异常通知/自动求花
-- **模式 G 智能回复**：关键词/首次/系统回复规则配置
-- **模式 H 商品采集**：从闲鱼其他店铺批量采集
-- **模式 I 卡券系统**：卡卷列表/卡种管理/批量导入
-- **模式 J 订单统计**：订单查看/评价/销售统计
-
-**内容引流通道（闲鱼创作者平台 author.goofish.com）**：
-- **模式 M 创作者发帖**：图文帖子创作规范与引流打法 → 读 `references/creator-platform.md`
-- ⚠️ 帖子≠宝贝：禁价格/促销/联系方式/硬导流（「主页有宝贝」「私聊下单」都违规），靠人设+价值软引流
-- ⚠️ 闲鱼圈子只能手机 App 发（2026-09-19 实测网页版无入口）；创作者平台是电脑端发内容的官方通道
-
-**备用通道（仅易店助手不可用时，需用户确认后使用）**：
-- **模式 A/B/C goofish.com 直发**（v2.x 遗留）：单发/批量/万能提示词。⚠️ 需要额外的闲鱼登录，且用同一 Chrome 实例（9222 + 同一 profile），不要另起浏览器。
-
 ---
 
 ## 🚫 合规红线（最高优先级，违反会被下架/封号）
@@ -87,7 +147,8 @@ Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentL
 
 **每类商品发布注意**：分类优先「其他闲置」；系统识别出更合适且支持网页发布的分类（如「DeepSeek服务」「AI数字人」）可用；图片上传后等约6秒再展开分类下拉才能看到「其他闲置」完整分类树。
 
-**易店助手通道补充红线（v3.0）**：
+**易店助手通道补充红线（v3.0）：**
+
 7. **卡密类商品需确认合法来源**（卡券系统的卡号/卡密需有合法授权，禁售盗版资源）
 8. **采集他人商品需确认不侵犯知识产权**（商品采集模块使用时注意）
 9. **自动回复内容不得含违禁词**（智能回复配置时自查，同第1-3条红线）
@@ -573,52 +634,56 @@ C:\Users\Administrator\.workbuddy\binaries\python\envs\default\Scripts\python.ex
 
 其余 21 条（上传/下拉/单选/弹窗/API 端点等排障细节）→ `references/pitfalls.md`
 
-## 参考文件
+## 项目结构
 
-- `scripts/ensure_chrome.py` — ⭐ 环境自检（每次任务第一步：复用/启动 Chrome 9222，固定登录态目录）
-- `scripts/ed_publish.py` — ⭐ 模式K 易店单商品发布（填表/传图/发布/结果判定）
-- `scripts/ed_publish_batch.py` — ⭐ 模式K 易店批量发布（断点续跑/日志/防风控间隔）
-- `references/xb-commands.md` — （已过时，v2.x xb CLI 时代参考，仅存档）
-- `references/service-library.md` — 33项服务完整文案库（拍摄剪辑8/无人机5/AI类9/生活类7/节点类3/老照片修复，每项含主图参数+价格+完整描述）
-- `references/legacy-goofish-direct.md` — （v4.2 外置）goofish.com 备用直发完整流程：模式 A/B/C 的 JS 填表序列、分类选择、地址弹窗处理
-- `references/pitfalls.md` — （v4.2 外置）已踩坑位完整清单 29 条（主文件只留 Top 8）
-- `references/xianyu-ops-playbook.md` — 运营打法手册（流量机制/关键词/定价阶梯/诊断漏斗/竞品分析；v4.1 吸收自 @Lenny xianyu-service-ops，MIT）
-- `references/xianyu-risk-and-reply.md` — 风控与客服话术手册（闲气值/流量池/降价改标/议价阶梯/人设语气；v4.1 吸收自 goofish-cli 内置技能，Apache 2.0）
-- `references/creator-platform.md` — 闲鱼创作者平台手册（author.goofish.com 发帖规范/人设/热点/内容红线；2026-09-20 官方要求整理）
-- `scripts/make-service-card.ps1` — 服务卡片主图生成脚本（参数化，UTF-8 BOM）
-- `scripts/gen_main_image.py` — 即梦 AI 主图生成模块（自动选最强模型，实拍场景库，AUTO 接入批量发布）
-- `scripts/publish_batch.py` — （备用）goofish 直发批量驱动（Chrome CDP 9222；先跑 `--check` 自检；旧的 publish-batch-node.js 已归档）
-- `assets/universal-prompt.md` — 万能发布提示词模板（给朋友用，朋友走 goofish 无易店）
-- `scripts/cdp_tools.py` — 易店助手 CDP 通用工具库（连接/eval/导航/表格/开关操作）
-- `scripts/ed_product.py` — 模式E 商品管理自动化（列表/筛选/搜索/开关/批量操作）
-- `scripts/ed_config.py` — 模式F 鱼店配置自动化（自动发货/自动回复/免拼发货等开关）
-- `scripts/ed_reply.py` — 模式G 智能回复配置（添加/读取/切换规则）
-- `scripts/ed_collect.py` — 模式H 商品采集自动化（搜索/批量ID/发布或存草稿）
-- `scripts/ed_card.py` — 模式I 卡券系统自动化（卡卷列表/添加卡密/卡种管理）
-- `scripts/ed_order.py` — 模式J 订单统计自动化（订单列表/状态/销售统计）
-- `scripts/check_visibility.py` — 模式L 搜索可见性诊断（买家视角搜关键词，判定限流）
+```
+xianyu-service-publish/
+├── SKILL.md                        # 技能定义（触发词 + 完整操作手册）
+├── README.md                       # 本文件
+├── README_EN.md                    # English README
+├── .env.example                    # 环境变量示例
+├── assets/
+│   └── universal-prompt.md         # 万能发布提示词模板（给朋友用，朋友走 goofish 无易店）
+├── references/                     # 深度参考文档（需用时才读）
+│   ├── service-library.md          # 33项服务完整文案库（拍摄剪辑8/无人机5/AI类9/生活类7/节点类3/老照片修复，每项含主图参数+价格+完整描述）
+│   ├── legacy-goofish-direct.md    # （v4.2 外置）goofish.com 备用直发完整流程：模式 A/B/C 的 JS 填表序列、分类选择、地址弹窗处理
+│   ├── pitfalls.md                 # （v4.2 外置）已踩坑位完整清单 29 条（主文件只留 Top 8）
+│   ├── xianyu-ops-playbook.md      # 运营打法手册（流量机制/关键词/定价阶梯/诊断漏斗/竞品分析；v4.1 吸收自 @Lenny xianyu-service-ops，MIT）
+│   ├── xianyu-risk-and-reply.md    # 风控与客服话术手册（闲气值/流量池/降价改标/议价阶梯/人设语气；v4.1 吸收自 goofish-cli 内置技能，Apache 2.0）
+│   ├── creator-platform.md         # 闲鱼创作者平台手册（author.goofish.com 发帖规范/人设/热点/内容红线；2026-09-20 官方要求整理）
+│   └── 已废弃-xb-commands.md       # （已过时，v2.x xb CLI 时代参考，仅存档）
+└── scripts/                        # 全部自动化脚本
+    ├── ensure_chrome.py            # ⭐ 环境自检（每次任务第一步：复用/启动 Chrome 9222，固定登录态目录）
+    ├── ed_publish.py               # ⭐ 模式K 易店单商品发布（填表/传图/发布/结果判定）
+    ├── ed_publish_batch.py         # ⭐ 模式K 易店批量发布（断点续跑/日志/防风控间隔）
+    ├── cdp_tools.py                # 易店助手 CDP 通用工具库（连接/eval/导航/表格/开关操作）
+    ├── ed_product.py               # 模式E 商品管理自动化（列表/筛选/搜索/开关/批量操作）
+    ├── ed_config.py                # 模式F 鱼店配置自动化（自动发货/自动回复/免拼发货等开关）
+    ├── ed_reply.py                 # 模式G 智能回复配置（添加/读取/切换规则）
+    ├── ed_collect.py               # 模式H 商品采集自动化（搜索/批量ID/发布或存草稿）
+    ├── ed_card.py                  # 模式I 卡券系统自动化（卡卷列表/添加卡密/卡种管理）
+    ├── ed_order.py                 # 模式J 订单统计自动化（订单列表/状态/销售统计）
+    ├── check_visibility.py         # 模式L 搜索可见性诊断（买家视角搜关键词，判定限流）
+    ├── gen_main_image.py           # 即梦 AI 主图生成模块（自动选最强模型，实拍场景库，AUTO 接入批量发布）
+    ├── make-service-card.ps1       # 服务卡片主图生成脚本（参数化，UTF-8 BOM）
+    ├── publish_batch.py            # （备用）goofish 直发批量驱动（Chrome CDP 9222；先跑 `--check` 自检）
+    └── （其余为排障探针脚本：probe_*.py / fix_price.py / try_prices.py / verify_all.py 等）
+```
 
-## 运行环境速查（v4.0 统一）
+## 注意事项
 
-### 唯一环境（所有模式共用）
-- 浏览器：Chrome（`C:\Program Files\Google\Chrome\Application\chrome.exe`），禁止其他浏览器
-- Chrome CDP 端口：9222，启动参数 `--remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir=C:\Users\Administrator\WorkBuddy\chrome-cdp-profile`
-- 登录态目录：`C:\Users\Administrator\WorkBuddy\chrome-cdp-profile`（易店+闲鱼 Cookie 都在这，勿删勿换）
-- 环境自检：`scripts/ensure_chrome.py`（每次任务第一步）
-- Python：`C:\Users\Administrator\.workbuddy\binaries\python\envs\default\Scripts\python.exe`（依赖 requests/websocket-client）
-- 脚本目录：`C:\Users\Administrator\.workbuddy\skills\xianyu-service-publish\scripts\`
+- **环境强绑定 Windows + Chrome**：所有路径、启动命令、登录态目录均为 Windows 环境实测配置，其他平台需自行适配
+- **Python 依赖**：`requests`、`websocket-client`，使用 WorkBuddy 内置 Python 环境（`C:\Users\Administrator\.workbuddy\binaries\python\envs\default\Scripts\python.exe`）
+- **即梦 AI 主图依赖 New API 网关**（127.0.0.1:3000）在线；网关不可用时自动降级为代码卡片方案
+- **合规红线是硬约束**：2026-08 曾因违禁导致 49 个在售宝贝全部下架 + 处罚 7 天，发布前必须逐条自查
+- **写操作前必须用户确认**：开关改动、批量发布、规则添加等真实写操作一律先 `dry_run` 预览并经用户确认
+- **免费版易店助手可能限制部分功能**（如智能回复自动开关被后端拒绝）
+- **登录态目录神圣不可动**：勿删、勿换、勿清缓存，否则需要重新扫码登录
 
-### 站点分工
-- **发布 + 管理**：易店助手 `ed.weeeg.com/ekadmin`（模式 K 发布，模式 E/F/G/H/I/J 管理）
-- **内容引流**：闲鱼创作者平台 `author.goofish.com`（模式 M 发帖子，规范见 references/creator-platform.md）
-- **备用直发**：`goofish.com`（仅模式 A/B/C，需用户确认）
+## 许可证
 
-### 易店模块 URL
-  - 商品管理：`ed.weeeg.com/ekadmin/product/product_list`
-  - 添加商品（发布）：`ed.weeeg.com/ekadmin/product/add_product`
-  - 鱼店配置：`ed.weeeg.com/ekadmin/configuration/yudian_config/2/113`
-  - 智能回复：`ed.weeeg.com/ekadmin/configuration/storereply`
-  - 商品采集：`ed.weeeg.com/ekadmin/product/productcollect`
-  - 卡卷管理：`ed.weeeg.com/ekadmin/card/card_cdk`
-  - 订单管理：`ed.weeeg.com/ekadmin/order/list`
+MIT License
 
+## 作者
+
+sheen945
